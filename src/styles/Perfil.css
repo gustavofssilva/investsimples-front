@@ -1,0 +1,147 @@
+.perfil-container {
+  min-height: 100vh;
+  background-color: #31353F;
+  margin-left: 256px;
+  width: calc(100% - 256px);
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.perfil-header {
+  padding: 2rem 2rem 0 2rem;
+}
+
+.back-btn {
+  background: transparent;
+  border: 2px solid #3A6FF8;
+  color: #FFF;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #3A6FF8;
+}
+
+.perfil-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2rem;
+  text-align: center;
+  
+}
+
+.perfil-main h1 {
+  color: #FFF;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.perfil-main p {
+  color: #CCC;
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+}
+
+.perfis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 360px);
+  gap: 2rem;
+  margin-bottom: 3rem;
+  justify-content: center;
+}
+
+.perfil-card {
+  background: #1B2028;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  height: 648px;
+  width: 360px;
+}
+
+.perfil-card:hover {
+  transform: translateY(-5px);
+  border-color: #3A6FF8;
+}
+
+.perfil-card.selecionado {
+  border-color: #3A6FF8;
+  box-shadow: 0 0 25px rgba(58, 111, 248, 0.4);
+}
+
+.perfil-imagem {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.escolher-btn {
+  background-color: #3A6FF8;
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.escolher-btn:hover {
+  background-color: #2a5bd8;
+  transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .perfis-grid {
+    grid-template-columns: repeat(2, 360px);
+  }
+}
+
+@media (max-width: 800px) {
+  .perfis-grid {
+    grid-template-columns: 360px;
+  }
+  
+  .perfil-container {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .perfil-main h1 {
+    font-size: 2rem;
+  }
+  
+  .perfil-main p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .perfil-card {
+    width: 320px;
+    height: 576px;
+  }
+  
+  .perfis-grid {
+    grid-template-columns: 320px;
+  }
+}
