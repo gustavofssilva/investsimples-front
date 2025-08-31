@@ -11,6 +11,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [user, setUser] = useState(null);
 
   // Dados estáticos para ícones e símbolos
   const cryptoInfo = {
@@ -19,6 +20,14 @@ const Home = () => {
     litecoin: { symbol: 'LTC', icon: <FaCoins size={24} color="#345D9D" />, name: 'Litecoin' },
     solana: { symbol: 'SOL', icon: <FaFire size={24} color="#00FFA3" />, name: 'Solana' }
   };
+
+  // Verificar usuário logado
+  useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, []);
 
   // Fetch dados em tempo real
   const fetchCryptoData = async () => {
@@ -92,6 +101,12 @@ const Home = () => {
     }
   }, [selectedCrypto]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('currentUser');
+    setUser(null);
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div className="home-container">
@@ -119,12 +134,21 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="home-header">
-        <button 
-          className="login-btn"
-          onClick={() => navigate('/login')}
-        >
-          Cadastre-se/Login
-        </button>
+        {user ? (
+          <div className="user-info">
+            <span className="welcome-text">Olá, {user.nome}</span>
+            <button className="logout-btn" onClick={handleLogout}>
+              Sair
+            </button>
+          </div>
+        ) : (
+          <button 
+            className="login-btn"
+            onClick={() => navigate('/login')}
+          >
+            Cadastre-se/Login
+          </button>
+        )}
       </header>
 
       <main className="home-main-content">

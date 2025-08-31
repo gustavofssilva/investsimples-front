@@ -234,3 +234,28 @@
   margin-bottom: 0.5rem;
   word-break: break-all;
 }
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcome-text {
+  color: #FFF;
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 2px solid #FF4D4D;
+  color: #FF4D4D;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #FF4D4D;
+  color: white;
+}

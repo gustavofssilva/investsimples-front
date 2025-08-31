@@ -3,74 +3,147 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
-  const [isLoginView, setIsLoginView] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    senha: '',
+    confirmarSenha: ''
+  });
+  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Mock de sucesso - depois substitua pela chamada real ao backend
-    alert(isLoginView ? 'Login mockado com sucesso!' : 'Cadastro mockado com sucesso!');
-    navigate('/');
+    setError('');
+
+    if (isLogin) {
+      // Login
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === formData.email && u.senha === formData.senha);
+      
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        navigate('/');
+      } else {
+        setError('Email ou senha incorretos');
+      }
+    } else {
+      // Cadastro
+      if (formData.senha !== formData.confirmarSenha) {
+        setError('As senhas não coincidem');
+        return;
+      }
+
+      if (formData.senha.length < 6) {
+        setError('A senha deve ter pelo menos 6 caracteres');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      if (users.some(u => u.email === formData.email)) {
+        setError('Este email já está cadastrado');
+        return;
+      }
+
+      const newUser = {
+        id: Date.now(),
+        nome: formData.nome,
+        email: formData.email,
+        senha: formData.senha,
+        dataCadastro: new Date().toISOString()
+      };
+
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      
+      navigate('/');
+    }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>{isLoginView ? 'Login' : 'Cadastre-se'}</h2>
+        <h2>{isLogin ? 'Login' : 'Cadastre-se'}</h2>
         
+        {error && <div className="error-message">{error}</div>}
+
         <form onSubmit={handleSubmit}>
-          {!isLoginView && (
-            <div className="form-group">
-              <label>Nome completo</label>
+          {!isLogin && (
+            <div className="input-group">
+              <label>Nome Completo</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                name="nome"
+                value={formData.nome}
+                onChange={handleChange}
                 required
+                placeholder="Seu nome completo"
               />
             </div>
           )}
 
-          <div className="form-group">
-            <label>E-mail</label>
+          <div className="input-group">
+            <label>Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               required
+              placeholder="seu@email.com"
             />
           </div>
 
-          <div className="form-group">
+          <div className="input-group">
             <label>Senha</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="senha"
+              value={formData.senha}
+              onChange={handleChange}
               required
-              minLength={6}
+              placeholder="Sua senha"
             />
           </div>
 
-          <button type="submit" className="submit-btn">
-            {isLoginView ? 'Entrar' : 'Cadastrar'}
+          {!isLogin && (
+            <div className="input-group">
+              <label>Confirmar Senha</label>
+              <input
+                type="password"
+                name="confirmarSenha"
+                value={formData.confirmarSenha}
+                onChange={handleChange}
+                required
+                placeholder="Confirme sua senha"
+              />
+            </div>
+          )}
+
+          <button type="submit" className="login-btn">
+            {isLogin ? 'Entrar' : 'Criar Conta'}
           </button>
         </form>
 
-        <div className="toggle-view">
-          <p>
-            {isLoginView ? 'Não tem uma conta?' : 'Já tem uma conta?'}
-            <button 
-              onClick={() => setIsLoginView(!isLoginView)}
-              className="toggle-btn"
-            >
-              {isLoginView ? ' Cadastre-se' : ' Faça login'}
-            </button>
-          </p>
-        </div>
+        <p className="toggle-text">
+          {isLogin ? 'Não tem uma conta? ' : 'Já tem uma conta? '}
+          <span 
+            className="toggle-link"
+            onClick={() => setIsLogin(!isLogin)}
+          >
+            {isLogin ? 'Cadastre-se' : 'Fazer Login'}
+          </span>
+        </p>
       </div>
     </div>
   );

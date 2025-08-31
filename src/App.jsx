@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import Perfil from './pages/Perfil';
 import Simulador from './pages/Simulador';
 import Aprenda from './pages/Aprenda';
+import Carteira from './pages/Carteira';
 import './styles/global.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/aprenda" element={<Aprenda />} />
+            <Route path="/carteira" element={<Carteira />} />
           </Routes>
         </div>
       </div>
