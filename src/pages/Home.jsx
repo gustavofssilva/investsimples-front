@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FaBitcoin, FaEthereum, FaCoins, FaFire } from 'react-icons/fa';
+import { FaBitcoin, FaEthereum, FaCoins, FaFire, FaSyncAlt } from 'react-icons/fa';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
-
-  // Estado para saber qual cripto está selecionada para o gráfico
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
-
-  // Lista de dados das criptos (cards)
   const [cryptoData, setCryptoData] = useState([]);
-
-  // Dados históricos para o gráfico
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [chartData, setChartData] = useState([]);
-
-  // Usuário logado (mockado pelo localStorage)
   const [user, setUser] = useState(null);
 
-  // Informações fixas de cada cripto (ícone, nome e símbolo)
+  // Dados estáticos para ícones e símbolos
   const cryptoInfo = {
     bitcoin: { symbol: 'BTC', icon: <FaBitcoin size={24} color="#F7931A" />, name: 'Bitcoin' },
     ethereum: { symbol: 'ETH', icon: <FaEthereum size={24} color="#627EEA" />, name: 'Ethereum' },
@@ -27,54 +21,118 @@ const Home = () => {
     solana: { symbol: 'SOL', icon: <FaFire size={24} color="#00FFA3" />, name: 'Solana' }
   };
 
-  // 🚨 MOCK: Dados de preços e variação
-  // Aqui você pode depois trocar pelo retorno da API de mercados
-  const mockCryptoData = [
-    { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', price: 45000, change: 2.35, icon: cryptoInfo.bitcoin.icon },
-    { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', price: 2800, change: -1.12, icon: cryptoInfo.ethereum.icon },
-    { id: 'litecoin', name: 'Litecoin', symbol: 'LTC', price: 92.45, change: 0.56, icon: cryptoInfo.litecoin.icon },
-    { id: 'solana', name: 'Solana', symbol: 'SOL', price: 110.34, change: 4.78, icon: cryptoInfo.solana.icon },
-  ];
-
-  // 🚨 MOCK: Dados de gráfico (gera 30 pontos aleatórios)
-  // Aqui você pode trocar depois pelo retorno da API de histórico 
-  const generateMockChartData = () => {
-    return Array.from({ length: 30 }, (_, i) => ({
-      name: `Dia ${i + 1}`, // Nome que aparece no eixo X
-      price: Math.round(100 + Math.random() * 1000), // Valor simulado
-      date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString() // Data real formatada
-    }));
-  };
-
-  // Simulação de "fetch inicial"
+  // Verificar usuário logado
   useEffect(() => {
-    setCryptoData(mockCryptoData); // 🚨 Troque aqui depois para setar os dados vindos da API
-    setChartData(generateMockChartData()); // 🚨 Troque aqui depois para setar os dados históricos reais
-
-    // Recupera usuário logado (mock com localStorage)
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
       setUser(currentUser);
     }
   }, []);
 
-  // Atualiza o gráfico quando trocar a cripto selecionada
+  // Fetch dados em tempo real
+  const fetchCryptoData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,litecoin,solana&order=market_cap_desc&per_page=4&page=1&sparkline=false&price_change_percentage=24h'
+      );
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar dados da API');
+      }
+      
+      const data = await response.json();
+      
+      const formattedData = data.map(crypto => ({
+        id: crypto.id,
+        name: cryptoInfo[crypto.id].name,
+        symbol: cryptoInfo[crypto.id].symbol,
+        price: crypto.current_price,
+        change: crypto.price_change_percentage_24h,
+        icon: cryptoInfo[crypto.id].icon
+      }));
+      
+      setCryptoData(formattedData);
+      setError(null);
+    } catch (err) {
+      setError('Erro ao carregar dados. Tente novamente.');
+      console.error('Erro API:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch dados históricos para o gráfico
+  const fetchHistoricalData = async () => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${selectedCrypto}/market_chart?vs_currency=usd&days=30&interval=daily`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar dados históricos');
+      }
+      
+      const data = await response.json();
+      
+      const formattedChartData = data.prices.map((price, index) => ({
+        name: `Dia ${index + 1}`,
+        price: price[1],
+        date: new Date(price[0]).toLocaleDateString()
+      }));
+      
+      setChartData(formattedChartData);
+    } catch (err) {
+      console.error('Erro histórico:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCryptoData();
+    
+    // Atualizar dados a cada 30 segundos
+    const interval = setInterval(fetchCryptoData, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (selectedCrypto) {
-      setChartData(generateMockChartData()); // 🚨 Aqui você colocaria o fetch da API de histórico da cripto
+      fetchHistoricalData();
     }
   }, [selectedCrypto]);
 
-  // Função de logout
   const handleLogout = () => {
     localStorage.removeItem('currentUser');
     setUser(null);
     navigate('/');
   };
 
+  if (loading) {
+    return (
+      <div className="home-container">
+        <div className="loading">
+          <FaSyncAlt className="spinner" />
+          <p>Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="home-container">
+        <div className="error">
+          <p>{error}</p>
+          <button onClick={fetchCryptoData} className="retry-btn">
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-container">
-      {/* Header com login/logout */}
       <header className="home-header">
         {user ? (
           <div className="user-info">
@@ -95,8 +153,7 @@ const Home = () => {
 
       <main className="home-main-content">
         <div className="home-content">
-          
-          {/* Cards das criptomoedas */}
+          {/* Cards de Criptomoedas com dados reais */}
           <div className="crypto-grid">
             {cryptoData.map((crypto) => (
               <div key={crypto.id} className="crypto-card">
@@ -117,11 +174,11 @@ const Home = () => {
             ))}
           </div>
 
-          {/* Gráfico histórico */}
+          {/* Gráfico Interativo */}
           <div className="chart-container">
             <h2>Performance Histórica (30 dias)</h2>
             
-            {/* Botões para trocar cripto no gráfico */}
+            {/* Botões para selecionar a criptomoeda no gráfico */}
             <div className="chart-selector">
               {cryptoData.map((crypto) => (
                 <button
@@ -134,7 +191,7 @@ const Home = () => {
               ))}
             </div>
 
-            {/* Gráfico (mockado ou vindo da API futuramente) */}
+            {/* Gráfico Responsivo com dados reais */}
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
