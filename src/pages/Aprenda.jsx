@@ -11,7 +11,8 @@ import {
   FaGraduationCap,
   FaChartLine,
   FaStar,
-  FaEye
+  FaEye,
+  FaTimes
 } from 'react-icons/fa';
 import '../styles/Aprenda.css';
 
@@ -27,6 +28,8 @@ const Aprenda = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todos');
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const categorias = [
     {
@@ -42,7 +45,8 @@ const Aprenda = () => {
           views: "12.5K",
           rating: 4.8,
           instructor: "Carlos Silva",
-          nivel: "Iniciante"
+          nivel: "Iniciante",
+          youtubeId: "d3Z2eBq7t7M" // ID do vídeo do YouTube
         },
         { 
           id: 2, 
@@ -52,7 +56,8 @@ const Aprenda = () => {
           views: "8.7K",
           rating: 4.6,
           instructor: "Ana Costa",
-          nivel: "Intermediário"
+          nivel: "Intermediário",
+          youtubeId: "kHJC3ioC-4o"
         },
         { 
           id: 3, 
@@ -62,7 +67,8 @@ const Aprenda = () => {
           views: "15.2K",
           rating: 4.9,
           instructor: "Roberto Martins",
-          nivel: "Avançado"
+          nivel: "Avançado",
+          youtubeId: "x8rlk6UDP7E"
         }
       ]
     },
@@ -79,7 +85,8 @@ const Aprenda = () => {
           views: "25.3K",
           rating: 4.7,
           instructor: "Maria Santos",
-          nivel: "Iniciante"
+          nivel: "Iniciante",
+          youtubeId: "Gc2en3nHxA4"
         },
         { 
           id: 5, 
@@ -89,7 +96,8 @@ const Aprenda = () => {
           views: "10.8K",
           rating: 4.5,
           instructor: "João Pereira",
-          nivel: "Intermediário"
+          nivel: "Intermediário",
+          youtubeId: "mC4LpRcU2oE"
         },
         { 
           id: 6, 
@@ -99,7 +107,8 @@ const Aprenda = () => {
           views: "18.9K",
           rating: 4.8,
           instructor: "Pedro Almeida",
-          nivel: "Avançado"
+          nivel: "Avançado",
+          youtubeId: "aQWflNQuPqo"
         }
       ]
     },
@@ -116,7 +125,8 @@ const Aprenda = () => {
           views: "30.1K",
           rating: 4.9,
           instructor: "Carla Mendes",
-          nivel: "Iniciante"
+          nivel: "Iniciante",
+          youtubeId: "EpDfqgQWr2c"
         },
         { 
           id: 8, 
@@ -126,7 +136,8 @@ const Aprenda = () => {
           views: "22.4K",
           rating: 4.7,
           instructor: "Ricardo Oliveira",
-          nivel: "Intermediário"
+          nivel: "Intermediário",
+          youtubeId: "EpDfqgQWr2c"
         }
       ]
     }
@@ -142,10 +153,14 @@ const Aprenda = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleVideoClick = (videoId) => {
-    // Aqui você pode implementar a lógica para reproduzir o vídeo
-    console.log('Reproduzindo vídeo:', videoId);
-    // navigate(`/video/${videoId}`); // Se quiser uma página dedicada
+  const handleVideoClick = (video) => {
+    setSelectedVideo(video);
+    setShowVideoModal(true);
+  };
+
+  const closeVideoModal = () => {
+    setShowVideoModal(false);
+    setSelectedVideo(null);
   };
 
   return (
@@ -240,7 +255,7 @@ const Aprenda = () => {
                   <div className="video-overlay">
                     <button 
                       className="play-btn"
-                      onClick={() => handleVideoClick(video.id)}
+                      onClick={() => handleVideoClick(video)}
                     >
                       <FaPlay />
                     </button>
@@ -289,7 +304,7 @@ const Aprenda = () => {
                     <div className="video-overlay">
                       <button 
                         className="play-btn"
-                        onClick={() => handleVideoClick(video.id)}
+                        onClick={() => handleVideoClick(video)}
                       >
                         <FaPlay />
                       </button>
@@ -336,6 +351,32 @@ const Aprenda = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal de Vídeo */}
+      {showVideoModal && selectedVideo && (
+        <div className="video-modal-overlay" onClick={closeVideoModal}>
+          <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={closeVideoModal}>
+              <FaTimes />
+            </button>
+            <div className="video-container">
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}`}
+                title={selectedVideo.titulo}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="video-modal-info">
+              <h3>{selectedVideo.titulo}</h3>
+              <p>Instrutor: {selectedVideo.instructor} | Nível: {selectedVideo.nivel}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
